@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  telegram-bridge:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - BOT_TOKEN=${BOT_TOKEN}
+      - GROUP_ID=${GROUP_ID}
+      - ADMIN_IDS=${ADMIN_IDS}
+      - APP_BASE_URL=${APP_BASE_URL}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      - PORT=8080
+      - DATA_DIR=./data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/healthz', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 5s

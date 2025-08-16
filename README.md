@@ -44,20 +44,35 @@ npm start
 
 ### Docker
 
+**ВАЖНО:** При использовании Docker переменные окружения должны передаваться явно, так как .env файл исключен из образа по соображениям безопасности.
+
 1. Соберите образ:
 ```bash
 docker build -t telegram-bridge .
 ```
 
-2. Запустите контейнер:
+2. Запустите контейнер с переменными окружения:
 ```bash
 docker run -d \
   --name telegram-bridge \
   -p 8080:8080 \
   -v $(pwd)/data:/app/data \
-  --env-file .env \
+  -e BOT_TOKEN="8461660386:AAGZUO_dtfLDg5BmHL-c_zaHqj8TNopXtZc" \
+  -e GROUP_ID="-1002789785856" \
+  -e ADMIN_IDS="1519845924" \
+  -e APP_BASE_URL="https://tgproxy.lexi.kz" \
+  -e WEBHOOK_SECRET="replace_me_with_random_long_token" \
+  -e PORT="8080" \
+  -e DATA_DIR="./data" \
   telegram-bridge
 ```
+
+3. Или используйте docker-compose с .env файлом:
+```bash
+docker-compose up -d
+```
+
+Пример docker-compose.yml уже создан в проекте и использует переменные из .env файла.
 
 ## Настройка
 

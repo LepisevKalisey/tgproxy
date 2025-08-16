@@ -95,9 +95,27 @@ bot.on('message', async (ctx) => {
         } catch (error) {
             console.error('Failed to copy message:', error);
             // Fallback for message types that cannot be copied
-            if (ctx.message.text) {
-                await withRetry(() => ctx.telegram.sendMessage(GROUP_ID, ctx.message.text, { message_thread_id: thread.thread_id }));
-            } // Add other types if needed
+            try {
+                if (ctx.message.text) {
+                    await withRetry(() => ctx.telegram.sendMessage(GROUP_ID, ctx.message.text, { message_thread_id: thread.thread_id }));
+                } else if (ctx.message.photo) {
+                    const photo = ctx.message.photo[ctx.message.photo.length - 1];
+                    await withRetry(() => ctx.telegram.sendPhoto(GROUP_ID, photo.file_id, { caption: ctx.message.caption, message_thread_id: thread.thread_id }));
+                } else if (ctx.message.document) {
+                    await withRetry(() => ctx.telegram.sendDocument(GROUP_ID, ctx.message.document.file_id, { caption: ctx.message.caption, message_thread_id: thread.thread_id }));
+                } else if (ctx.message.audio) {
+                    await withRetry(() => ctx.telegram.sendAudio(GROUP_ID, ctx.message.audio.file_id, { caption: ctx.message.caption, message_thread_id: thread.thread_id }));
+                } else if (ctx.message.video) {
+                    await withRetry(() => ctx.telegram.sendVideo(GROUP_ID, ctx.message.video.file_id, { caption: ctx.message.caption, message_thread_id: thread.thread_id }));
+                } else if (ctx.message.voice) {
+                    await withRetry(() => ctx.telegram.sendVoice(GROUP_ID, ctx.message.voice.file_id, { caption: ctx.message.caption, message_thread_id: thread.thread_id }));
+                } else if (ctx.message.sticker) {
+                    await withRetry(() => ctx.telegram.sendSticker(GROUP_ID, ctx.message.sticker.file_id, { message_thread_id: thread.thread_id }));
+                }
+            } catch (fallbackError) {
+                console.error('Failed to send fallback message:', fallbackError);
+                await withRetry(() => ctx.telegram.sendMessage(GROUP_ID, `❌ Не удалось переслать сообщение от пользователя ${user.id}`, { message_thread_id: thread.thread_id }));
+            }
         }
     } else if (ctx.chat.id == GROUP_ID && ctx.message.is_topic_message && !ctx.from.is_bot) {
         const thread = await storage.getThreadById(ctx.message.message_thread_id);
@@ -106,7 +124,8 @@ bot.on('message', async (ctx) => {
                 if (ctx.message.text) {
                     await withRetry(() => ctx.telegram.sendMessage(thread.user_id, ctx.message.text));
                 } else if (ctx.message.photo) {
-                    await withRetry(() => ctx.telegram.sendPhoto(thread.user_id, ctx.message.photo[0].file_id, { caption: ctx.message.caption }));
+                    const photo = ctx.message.photo[ctx.message.photo.length - 1]; // Get highest resolution
+                    await withRetry(() => ctx.telegram.sendPhoto(thread.user_id, photo.file_id, { caption: ctx.message.caption }));
                 } else if (ctx.message.document) {
                     await withRetry(() => ctx.telegram.sendDocument(thread.user_id, ctx.message.document.file_id, { caption: ctx.message.caption }));
                 } else if (ctx.message.audio) {
