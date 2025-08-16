@@ -32,9 +32,9 @@ app.post('/tg/webhook', (req, res) => {
 });
 
 // Bot logic
-bot.start((ctx) => ctx.reply('👋 Добро пожаловать!\n\nСпасибо, что заинтересовалисб нашим проектом.'));
+bot.start((ctx) => ctx.reply('👋 Добро пожаловать!\n\nСпасибо, что заинтересовались нашим проектом. Мы готовы ответить на любые вопросы'));
 
-const userCardCache = new Map();
+ const userCardCache = new Map();
 
 function canSendUserCard(userId) {
     const today = new Date().toISOString().split('T')[0];
